@@ -43,12 +43,21 @@ const setupTextHover = (container, type) => {
             const distance = Math.abs(mouseX - (l - left + w/2));
             const intensity = Math.exp(-(distance**2)/2000);
             
-
-            animateLetter(letter, min + (max-min)*intensity)
+            animateLetter(letter, min + (max-min)*intensity);
         })
     }
 
+    const handleMouseLeave = () => {
+      letters.forEach((letter) => animateLetter(letter, base, 0.3))
+    }
     container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseleave", handleMouseLeave);
+    
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+    }
+
 }
 
 
@@ -57,8 +66,13 @@ const Welcome = () => {
   const titleRef = useRef(null);
   
   useGSAP(()=>{
-    setupTextHover(titleRef.current, 'title');
-    setupTextHover(subtitleRef.current, 'subtitle');
+    const titleCleanup = setupTextHover(titleRef.current, 'title');
+    const subtitleCleanup = setupTextHover(subtitleRef.current, 'subtitle');
+
+    return () => {
+      subtitleCleanup();
+      titleCleanup();
+    }
   }, []);
 
   return (
@@ -70,7 +84,7 @@ const Welcome = () => {
           100,
         )}
       </p>
-      <h1 ref={titleRef} className='mt-7'>
+      <h1 ref={titleRef} className='mt-10'>
         {renderText("Portfolio", "text-9xl italic font-georama")}
       </h1>
 
